@@ -1,13 +1,17 @@
 import os
 import json
 import pandas as pd
+import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics.pairwise import cosine_similarity
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from supabase import create_client, Client
 import nest_asyncio
 from uvicorn import Config, Server
+from typing import List
 
 # Supabase Ayarları
 SUPABASE_URL = "https://ksuzrlinbncwfrgwdrdf.supabase.co"
@@ -40,22 +44,38 @@ def process_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 # Kullanıcının günlük müziklerini Supabase'den çekme
-def fetch_day_music(user_id: str) -> list:
-    response = supabase.table("day_music").select("url,artist,title").eq("user_id", user_id).execute()
+def fetch_day_music(user_id: str) -> pd.DataFrame:
+    response = supabase.table("day_music").select("title,artist,genre").eq("user_id", user_id).execute()
     if response.data:
-        return response.data
+        return pd.DataFrame(response.data)
     else:
         raise HTTPException(status_code=404, detail="No daily music found for this user.")
 
 # Öneri işlevi
 def recommend_songs(day_library_df: pd.DataFrame, library_df: pd.DataFrame, num_recommendations: int = 10) -> pd.DataFrame:
+    # TF-IDF vektörleştirme
     tfidf_vectorizer = TfidfVectorizer(stop_words="english")
     tfidf_matrix = tfidf_vectorizer.fit_transform(library_df["features"])
 
+    # Rating değerlerini normalize et
+    scaler = MinMaxScaler()
+    library_df["normalized_rating"] = scaler.fit_transform(library_df[["rating"]])
+
+    # TF-IDF vektörleri ile rating'i birleştir
+    combined_features = np.hstack([tfidf_matrix.toarray(), library_df["normalized_rating"].values.reshape(-1, 1)])
+
+    # K-Means modeli
+    num_clusters = 7
+    kmeans = KMeans(n_clusters=num_clusters, n_init=10, random_state=42)
+    kmeans.fit(combined_features)
+    library_df["cluster"] = kmeans.labels_
+
+    # Kullanıcı tarafından dinlenen şarkılar için öneriler
     recommendations = []
     for _, row in day_library_df.iterrows():
         song_vec = tfidf_vectorizer.transform([row["features"]])
-        similarities = cosine_similarity(song_vec, tfidf_matrix)
+        song_combined_vec = np.hstack([song_vec.toarray(), [[0]]])
+        similarities = cosine_similarity(song_combined_vec, combined_features)
         top_indices = similarities[0].argsort()[-num_recommendations:][::-1]
         recommended = library_df.iloc[top_indices]
         recommendations.append(recommended)
@@ -70,14 +90,10 @@ class RecommendationRequest(BaseModel):
 async def recommend_songs_endpoint(request: RecommendationRequest):
     try:
         user_id = request.user_id
-        print(f"Received user ID: {user_id}")
-
-        # Günlük müzikleri çek
         day_music_data = fetch_day_music(user_id)
-        day_library_df = pd.DataFrame(day_music_data)
-        day_library_df = process_features(day_library_df)
+        day_library_df = process_features(day_music_data)
 
-        # Library JSON'u yükle
+        # Library JSON'u yükle ve işlem yap
         library_df = load_json(library_file)
         library_df = process_features(library_df)
 
@@ -85,7 +101,6 @@ async def recommend_songs_endpoint(request: RecommendationRequest):
         recommendations = recommend_songs(day_library_df, library_df)
         return {"recommendations": recommendations.to_dict(orient="records")}
     except Exception as e:
-        print(f"Error occurred: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # FastAPI sunucusu
@@ -93,5 +108,4 @@ config = Config(app=app, host="0.0.0.0", port=8000, reload=False)
 server = Server(config=config)
 
 if __name__ == "__main__":
-    print("Starting FastAPI server...")
     server.run()
