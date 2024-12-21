@@ -14,7 +14,7 @@ from uuid import UUID
 
 # Supabase Ayarları
 SUPABASE_URL = "https://ksuzrlinbncwfrgwdrdf.supabase.co"
-SUPABASE_API_KEY = "API_KEY_HERE"
+SUPABASE_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdXpybGluYm5jd2ZyZ3dkcmRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4ODEzOTksImV4cCI6MjA0ODQ1NzM5OX0.hOKqPK5IS0oj-C002-rVOfb0UdZRWP1yToMN8Lr4uX4"
 
 # Supabase istemcisi
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_API_KEY)
