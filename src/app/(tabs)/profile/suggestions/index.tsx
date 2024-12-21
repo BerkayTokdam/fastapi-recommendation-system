@@ -1,11 +1,13 @@
 import { useAuth } from '@/providers/AuthProvider';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import TrackPlayer, { Track } from 'react-native-track-player';
 
 type Recommendation = {
   title: string;
   artist: string;
+  url: string; // Şarkının çalınması için gerekli olan URL
 };
 
 const fetchRecommendations = async (userId: string): Promise<Recommendation[]> => {
@@ -17,6 +19,16 @@ const fetchRecommendations = async (userId: string): Promise<Recommendation[]> =
   } catch (error) {
     console.error('Error fetching recommendations:', error);
     return [];
+  }
+};
+
+const playTrack = async (track: Track) => {
+  try {
+    await TrackPlayer.reset();
+    await TrackPlayer.add(track);
+    await TrackPlayer.play();
+  } catch (error) {
+    console.error('Error playing track:', error);
   }
 };
 
@@ -61,10 +73,20 @@ const MusicSuggestion = () => {
       keyExtractor={(item, index) => `${item.title}-${index}`}
       contentContainerStyle={styles.container}
       renderItem={({ item }) => (
-        <View style={styles.itemContainer}>
+        <TouchableOpacity
+          style={styles.itemContainer}
+          onPress={() =>
+            playTrack({
+              id: `${item.title}-${item.artist}`,
+              url: item.url, // Şarkının URL'si (backend'den doğru şekilde gelmeli)
+              title: item.title,
+              artist: item.artist,
+            })
+          }
+        >
           <Text style={styles.title}>{item.title}</Text>
           <Text style={styles.artist}>{item.artist}</Text>
-        </View>
+        </TouchableOpacity>
       )}
     />
   );

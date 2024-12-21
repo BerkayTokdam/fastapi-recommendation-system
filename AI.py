@@ -64,7 +64,7 @@ def recommend_songs(day_music_df: pd.DataFrame, library_df: pd.DataFrame, num_cl
 
     # Benzer gruptaki şarkıları öner
     recommendations = library_df[library_df["cluster"].isin(listened_clusters)].sample(n=num_recommendations, random_state=42)
-    return recommendations[["title", "artist"]]
+    return recommendations[["title", "artist", "url"]]
 
 # FastAPI endpoint
 @app.post("/recommend_songs")
