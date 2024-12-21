@@ -11,7 +11,7 @@ type Recommendation = {
 
 const fetchRecommendations = async (userId: string): Promise<Recommendation[]> => {
   try {
-    const response = await axios.post('http://10.35.216.11:8000/recommend', { user_id: userId });
+    const response = await axios.post('https://fastapi-recommendation-system.onrender.com/recommend', { user_id: userId });
     return response.data.recommendations;
   } catch (error) {
     console.error('Error fetching recommendations:', error);
