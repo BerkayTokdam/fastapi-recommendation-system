@@ -6,12 +6,13 @@ import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-nativ
 type Recommendation = {
   title: string;
   artist: string;
-  genre: string[];
 };
 
 const fetchRecommendations = async (userId: string): Promise<Recommendation[]> => {
   try {
-    const response = await axios.post('https://fastapi-recommendation-system.onrender.com/recommend', { user_id: userId });
+    const response = await axios.post('https://fastapi-recommendation-system.onrender.com/recommend_songs', {
+      user_id: userId,
+    });
     return response.data.recommendations;
   } catch (error) {
     console.error('Error fetching recommendations:', error);
@@ -63,7 +64,6 @@ const MusicSuggestion = () => {
         <View style={styles.itemContainer}>
           <Text style={styles.title}>{item.title}</Text>
           <Text style={styles.artist}>{item.artist}</Text>
-          <Text style={styles.genre}>Genre: {item.genre?.join(', ')}</Text>
         </View>
       )}
     />
@@ -91,11 +91,6 @@ const styles = StyleSheet.create({
   artist: {
     fontSize: 14,
     color: '#dddddd',
-    marginTop: 4,
-  },
-  genre: {
-    fontSize: 14,
-    color: '#aaaaaa',
     marginTop: 4,
   },
   loadingContainer: {

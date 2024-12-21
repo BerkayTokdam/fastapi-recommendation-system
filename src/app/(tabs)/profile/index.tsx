@@ -171,7 +171,7 @@ export default function ProfileScreen() {
 				</View>
 				<View style={styles.daySuggestionContainer}>
 					<Button
-						title="Go to Music Suggestions"
+						title="Go to Suggestions"
 						onPress={() => router.push('/profile/suggestions')} // Yönlendirme yapılacak rota
 						buttonStyle={styles.buttonDayMusic}
 						titleStyle={styles.buttonTitleDayMusic}
