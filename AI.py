@@ -49,7 +49,7 @@ def fetch_day_music(user_id: str) -> pd.DataFrame:
         raise HTTPException(status_code=500, detail=f"Supabase fetch error: {e}")
 
 # K-Means ve öneri oluşturma fonksiyonu
-def recommend_songs(day_music_df: pd.DataFrame, library_df: pd.DataFrame, num_clusters: int = 7, num_recommendations: int = 5) -> pd.DataFrame:
+def recommend_songs(day_music_df: pd.DataFrame, library_df: pd.DataFrame, num_clusters: int = 7, num_recommendations: int = 10) -> pd.DataFrame:
     # TF-IDF vektörleştirme
     tfidf_vectorizer = TfidfVectorizer(stop_words="english")
     tfidf_matrix = tfidf_vectorizer.fit_transform(library_df["features"])
