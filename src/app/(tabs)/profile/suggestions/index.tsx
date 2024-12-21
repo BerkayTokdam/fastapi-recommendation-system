@@ -95,6 +95,7 @@ const MusicSuggestion = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
+    paddingBottom: 100,
     backgroundColor: 'black',
   },
   itemContainer: {
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#333',
   },
   title: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: 'white',
   },
