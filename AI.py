@@ -41,7 +41,7 @@ def process_features(df: pd.DataFrame) -> pd.DataFrame:
 
 # Kullanıcının günlük müziklerini Supabase'den çekme
 def fetch_day_music(user_id: str) -> list:
-    response = supabase.table("day_music").select("genre,artist,title").eq("user_id", user_id).execute()
+    response = supabase.table("day_music").select("url,artist,title").eq("user_id", user_id).execute()
     if response.data:
         return response.data
     else:
