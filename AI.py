@@ -86,23 +86,14 @@ def recommend_songs(day_library_df: pd.DataFrame, library_df: pd.DataFrame, num_
 # API modeli
 class RecommendationRequest(BaseModel):
     user_id: str
-
-@app.post("/recommend")
-async def recommend_songs_endpoint(request: RecommendationRequest):
+@app.get("/test_supabase")
+async def test_supabase(user_id: str):
     try:
-        user_id = request.user_id
-        day_music_data = fetch_day_music(user_id)
-        day_library_df = process_features(day_music_data)
-
-        # Library JSON'u yükle ve işlem yap
-        library_df = load_json(library_file)
-        library_df = process_features(library_df)
-
-        # Öneri oluştur
-        recommendations = recommend_songs(day_library_df, library_df)
-        return {"recommendations": recommendations.to_dict(orient="records")}
+        response = supabase.table("day_music").select("*").eq("user_id", user_id).execute()
+        return {"data": response.data}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return {"error": str(e)}
+
 
 # FastAPI sunucusu
 config = Config(app=app, host="0.0.0.0", port=8000, reload=False)
